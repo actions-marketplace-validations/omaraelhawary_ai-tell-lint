@@ -155,7 +155,7 @@ class TestPr(unittest.TestCase):
         self.write("x.md", "\n".join([CLEAN] * 10) + "\n")
         base = self.commit()
         lines = [CLEAN] * 10
-        lines[1] = "++ x.md"
+        lines[1] = "++ y.md"
         lines[7] = TELL
         self.write("x.md", "\n".join(lines) + "\n")
         head = self.commit()
