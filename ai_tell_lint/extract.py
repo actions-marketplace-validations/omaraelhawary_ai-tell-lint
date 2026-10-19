@@ -91,7 +91,7 @@ def is_prose_path(path):
     low = (path or "").lower()
     if not low.endswith(PROSE_EXT):
         return False
-    return not any(part in low for part in SKIP_PATH)
+    return not any(part in "/" + low for part in SKIP_PATH)
 
 
 def write_targets(tool, ti):

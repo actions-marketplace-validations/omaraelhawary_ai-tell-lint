@@ -34,6 +34,11 @@ class TestExtract(unittest.TestCase):
         return path
 
     # ported from test-bash-redirect.py: DENY cases must surface the text
+    def test_skip_paths_match_relative_and_absolute(self):
+        for p in ("node_modules/a.md", "/x/node_modules/a.md", "docs/vendor/a.md"):
+            self.assertFalse(extract.is_prose_path(p), p)
+        self.assertTrue(extract.is_prose_path("docs/a.md"))
+
     def test_heredoc_to_md(self):
         self.assertIn(TELL, bash(HEREDOC % "notes.md"))
 

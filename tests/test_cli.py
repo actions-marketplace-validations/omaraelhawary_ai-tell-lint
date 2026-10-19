@@ -49,6 +49,20 @@ class TestCli(unittest.TestCase):
             rc = cli.main(argv)
         return rc, out.getvalue(), err.getvalue()
 
+    def test_event_list_is_internal_error_exit_2(self):
+        ev = self.file("ev.json", "[]")
+        subprocess.run(["git", "init", "-q"], check=True)
+        subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "-c", "commit.gpgsign=false",
+                        "commit", "-q", "--allow-empty", "-m", "c"], check=True)
+        rc, _, err = self.run_cli(["pr", "--base", "HEAD", "--head", "HEAD", "--event", ev])
+        self.assertEqual(rc, 2)
+        self.assertIn("ai-tell-lint:", err)
+
+    def test_github_format_escapes_property_values_and_message(self):
+        from ai_tell_lint.core import Hit
+        out = cli.format_hit("a,b:c.md", Hit("Cat", "100%\nnext\r", 1), "error", "github")
+        self.assertEqual(out, "::error file=a%2Cb%3Ac.md,line=1::Cat: \"100%25%0Anext%0D\"")
+
     def test_clean_file_exit_0(self):
         rc, out, _ = self.run_cli([self.file("a.md", CLEAN)])
         self.assertEqual((rc, out), (0, ""))

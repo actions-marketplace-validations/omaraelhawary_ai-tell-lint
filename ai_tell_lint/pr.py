@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import os
 import re
 import subprocess
 import sys
@@ -69,7 +70,7 @@ def _header_path(rest: str) -> str | None:
 
 def added_lines(base: str, head: str) -> dict[str, set[int]]:
     out = _git_ok("-c", "core.quotepath=off", "diff", "--src-prefix=a/", "--dst-prefix=b/",
-                  "-U0", "-M", "--diff-filter=AMR", base, head)
+                  "-U0", "-M", "--diff-filter=AMR", base + "..." + head)
     res: dict[str, set[int]] = {}
     path, state = None, "start"  # start -> minus -> hunks, reset by each "diff --git"
     for line in _text(out).splitlines():
@@ -122,8 +123,14 @@ def run_pr(base: str, head: str, event_path: str | None, commits_level: str,
                   "Set fetch-depth: 0 on actions/checkout." % sha, file=sys.stderr)
             return 2
     try:
-        if config_path:
+        if config_path and os.path.isabs(config_path):
             rules = load_config(config_path)
+        elif config_path:
+            # A repo-relative config comes from base, so the PR cannot loosen it.
+            r = _git("show", "%s:%s" % (base, config_path))
+            if r.returncode != 0:
+                raise ConfigError("config %s is missing on the base commit" % config_path)
+            rules = load_config(text=_text(r.stdout))
         else:
             r = _git("show", "%s:.ai-tell-lint.json" % base)
             # No base config: bundled defaults only, never the head copy or user file.

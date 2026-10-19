@@ -20,7 +20,7 @@ class ConfigError(Exception):
 def find_repo_root(path: str) -> str | None:
     try:
         r = subprocess.run(["git", "-C", path, "rev-parse", "--show-toplevel"],
-                           capture_output=True, text=True, timeout=10)
+                           capture_output=True, text=True, timeout=3)
     except (OSError, subprocess.SubprocessError):
         return None
     out = r.stdout.strip()

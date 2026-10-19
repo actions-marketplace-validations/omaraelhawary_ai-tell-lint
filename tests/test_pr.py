@@ -40,6 +40,7 @@ class TestPr(unittest.TestCase):
         subprocess.run(["git", "init", "-q"], check=True)
 
     def write(self, name, text, mode="w"):
+        os.makedirs(os.path.dirname(os.path.join(self.repo, name)), exist_ok=True)
         with open(os.path.join(self.repo, name), mode) as f:
             f.write(text)
 
@@ -199,6 +200,40 @@ class TestPr(unittest.TestCase):
         rc, out, _ = self.run_pr(base, head, event=self.event(body=TELL))
         self.assertEqual(rc, 1)
         self.assertIn("PR description", out)
+
+    def test_base_moving_on_does_not_count_as_pr_lines(self):
+        # main deletes a TELL line after the cut; a two-dot diff would show it as added
+        self.write("README.md", "# T\n\n%s\n\n%s\n" % (CLEAN, TELL))
+        fork = self.commit("init")
+        subprocess.run(["git", "checkout", "-q", "-b", "feature"], check=True)
+        self.write("NEW.md", "# New\n\n%s\n" % CLEAN)
+        feature = self.commit("add new")
+        subprocess.run(["git", "checkout", "-q", fork], check=True)
+        subprocess.run(["git", "checkout", "-q", "-b", "trunk"], check=True)
+        self.write("README.md", "# T\n\n%s\n" % CLEAN)
+        tip = self.commit("main edits readme")
+        rc, out, _ = self.run_pr(tip, feature)
+        self.assertEqual(rc, 0, out)
+
+    def test_explicit_relative_config_missing_on_base_is_error(self):
+        self.write("README.md", "# T\n")
+        base = self.commit()
+        self.write(".github/x.json", json.dumps({"disable": list(load_config(text="{}")["block"])}))
+        self.write("README.md", "# T\n\n%s\n" % TELL)
+        head = self.commit()
+        rc, _, err = self.run_pr(base, head, config=".github/x.json")
+        self.assertEqual(rc, 2)
+        self.assertIn(".github/x.json", err)
+
+    def test_explicit_relative_config_read_from_base(self):
+        self.write("README.md", "# T\n")
+        self.write(".github/x.json", "{}")
+        base = self.commit()
+        self.write(".github/x.json", json.dumps({"disable": list(load_config(text="{}")["block"])}))
+        self.write("README.md", "# T\n\n%s\n" % TELL)
+        head = self.commit()
+        rc, _, _ = self.run_pr(base, head, config=".github/x.json")
+        self.assertEqual(rc, 1)
 
 
 if __name__ == "__main__":

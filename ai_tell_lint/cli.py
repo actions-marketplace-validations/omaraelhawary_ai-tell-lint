@@ -8,10 +8,15 @@ from .config import ConfigError, find_repo_root, load_config
 from .core import Hit, lint
 
 
+def _esc(s: str, prop: bool = False) -> str:
+    s = s.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    return s.replace(":", "%3A").replace(",", "%2C") if prop else s
+
+
 def format_hit(path: str, hit: Hit, level: str, fmt: str) -> str:
     if fmt == "github":
-        loc = "file=%s" % path + (",line=%d" % hit.line if hit.line is not None else "")
-        return "::%s %s::%s" % (level, loc, hit)
+        loc = "file=%s" % _esc(path, True) + (",line=%d" % hit.line if hit.line is not None else "")
+        return "::%s %s::%s" % (level, loc, _esc(str(hit)))
     return "%s%s: %s: %s" % (path, ":%d" % hit.line if hit.line is not None else "", level, hit)
 
 
@@ -35,10 +40,20 @@ def _pr_main(argv: list[str]) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    try:
+        return _main(argv)
+    except SystemExit:
+        raise
+    except Exception as e:  # an uncaught crash must not look like a block hit (exit 1)
+        return _err("internal error: %s" % e)
+
+
+def _main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else list(argv)
     if argv and argv[0] == "pr":
         return _pr_main(argv[1:])
-    p = argparse.ArgumentParser(prog="ai-tell-lint")
+    p = argparse.ArgumentParser(prog="ai-tell-lint",
+                                epilog="Subcommand: 'ai-tell-lint pr --base SHA --head SHA' lints a pull request.")
     p.add_argument("--config")
     p.add_argument("--format", choices=("text", "github"), default="text")
     p.add_argument("files", nargs="*", metavar="FILE")
@@ -50,7 +65,8 @@ def main(argv: list[str] | None = None) -> int:
     failed = False
     for path in args.files or ["-"]:
         if path == "-":
-            text, shown = sys.stdin.read(), "<stdin>"
+            text, shown = (sys.stdin.buffer.read().decode("utf-8", "replace")
+                           if hasattr(sys.stdin, "buffer") else sys.stdin.read()), "<stdin>"
         else:
             try:
                 with open(path, encoding="utf-8", errors="replace") as f:

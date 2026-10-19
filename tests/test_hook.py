@@ -75,6 +75,15 @@ class TestHook(Case):
     def test_command_prefix_off(self):
         self.assertEqual(self.bash('AI_TELL_LINT=off git commit -m "%s"' % TELL), "PASS")
 
+    def test_off_inside_quoted_body_does_not_bypass(self):
+        self.assertEqual(self.bash('echo "AI_TELL_LINT=off" && git commit -m "%s"' % TELL), "DENY")
+
+    def test_reason_says_only_user_bypasses(self):
+        out = self.raw(json.dumps({"hook_event_name": "PreToolUse", "tool_name": "Write",
+                                   "tool_input": {"file_path": os.path.join(self.cwd, "a.md"),
+                                                  "content": TELL}, "cwd": self.cwd})).stdout
+        self.assertIn("ask the user. Only the user should bypass", out)
+
     def test_env_off(self):
         self.assertEqual(self.write(TELL, env={"AI_TELL_LINT": "off"}), "PASS")
 

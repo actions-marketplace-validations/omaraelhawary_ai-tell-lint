@@ -15,6 +15,8 @@ import sys
 
 from . import config, core, extract
 
+# Only a real command prefix counts, never the same text inside a quoted body.
+BYPASS = re.compile(r"(?:^|[;&|])\s*AI_TELL_LINT=(?:off|0|false)\s", re.I)
 OFF_SENTINEL = "~/.config/ai-tell-lint/off"
 
 
@@ -39,8 +41,7 @@ def reason(block: list, warn: list, what: str) -> str:
         "",
         "Rewrite the flagged spans in plain, specific words and retry.",
         "Swapping one word for a synonym defeats the check: change the sentence.",
-        "If a flagged word really is the right one, the user can bypass once with",
-        "AI_TELL_LINT=off <command>.",
+        "If a flagged word really is the right one, ask the user. Only the user should bypass, once, with AI_TELL_LINT=off <command>.",
     ]
     return "\n".join(lines)
 
@@ -95,7 +96,7 @@ def _run(stdin, stdout) -> None:
     ti = payload.get("tool_input") or {}
     if tool == "Bash":
         command = ti.get("command") or ""
-        if re.search(r"\bAI_TELL_LINT=(?:off|0|false)\b", command, re.I):
+        if BYPASS.search(command):
             return
         targets = extract.bash_targets(command)
         what = "this issue, PR or commit text"
