@@ -20,11 +20,24 @@ def _err(msg: str) -> int:
     return 2
 
 
+def _pr_main(argv: list[str]) -> int:
+    from . import pr
+
+    p = argparse.ArgumentParser(prog="ai-tell-lint pr")
+    p.add_argument("--base", required=True)
+    p.add_argument("--head", required=True)
+    p.add_argument("--event")
+    p.add_argument("--commits", choices=("warn", "block"), default="warn")
+    p.add_argument("--config")
+    p.add_argument("--format", choices=("text", "github"), default="github")
+    a = p.parse_args(argv)
+    return pr.run_pr(a.base, a.head, a.event, a.commits, a.config, a.format)
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = sys.argv[1:] if argv is None else list(argv)
     if argv and argv[0] == "pr":
-        # Task 6 replaces this stub.
-        return _err("pr mode is not implemented yet")
+        return _pr_main(argv[1:])
     p = argparse.ArgumentParser(prog="ai-tell-lint")
     p.add_argument("--config")
     p.add_argument("--format", choices=("text", "github"), default="text")

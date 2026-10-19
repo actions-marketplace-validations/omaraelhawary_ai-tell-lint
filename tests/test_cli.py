@@ -96,10 +96,10 @@ class TestCli(unittest.TestCase):
         rc, _, _ = self.run_cli([self.file("a.py", TELL)])
         self.assertEqual(rc, 1)
 
-    def test_pr_stub_exit_2(self):
-        rc, _, err = self.run_cli(["pr"])
-        self.assertEqual(rc, 2)
-        self.assertIn("not implemented", err)
+    def test_pr_requires_base_and_head(self):
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as cm:
+            cli.main(["pr"])
+        self.assertEqual(cm.exception.code, 2)
 
     def test_format_hit(self):
         from ai_tell_lint.core import Hit

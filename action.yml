@@ -1,0 +1,36 @@
+name: ai-tell-lint
+description: Flag AI-sounding prose in the lines a pull request adds, its description and its commit messages.
+branding:
+  icon: edit-3
+  color: gray-dark
+inputs:
+  config:
+    description: Path to a config file. Default is .ai-tell-lint.json on the base branch.
+    default: ""
+  commits:
+    description: Report commit message hits as warn or block.
+    default: warn
+runs:
+  using: composite
+  steps:
+    - if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        COMMITS: ${{ inputs.commits }}
+        CONFIG: ${{ inputs.config }}
+      run: |
+        args=()
+        if [ -n "$CONFIG" ]; then args=(--config "$CONFIG"); fi
+        python3 -m ai_tell_lint pr \
+          --base "$BASE_SHA" \
+          --head "$HEAD_SHA" \
+          --event "$GITHUB_EVENT_PATH" \
+          --commits "$COMMITS" \
+          ${args[@]+"${args[@]}"}
+    - if: github.event_name != 'pull_request' && github.event_name != 'pull_request_target'
+      shell: bash
+      run: |
+        echo "ai-tell-lint: not a pull_request event, nothing to check"
