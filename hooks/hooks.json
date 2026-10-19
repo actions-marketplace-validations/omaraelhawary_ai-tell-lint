@@ -1,0 +1,40 @@
+{
+  "description": "Blocks AI-sounding prose in commit messages, PR and issue text, and prose files.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PYTHONPATH=\"${CLAUDE_PLUGIN_ROOT}\" python3 -m ai_tell_lint.hook",
+            "timeout": 10,
+            "statusMessage": "Checking text for AI tells..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PYTHONPATH=\"${CLAUDE_PLUGIN_ROOT}\" python3 -m ai_tell_lint.hook",
+            "timeout": 10,
+            "statusMessage": "Checking text for AI tells..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "PYTHONPATH=\"${CLAUDE_PLUGIN_ROOT}\" python3 -m ai_tell_lint.hook",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

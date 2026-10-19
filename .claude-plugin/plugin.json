@@ -1,0 +1,10 @@
+{
+  "name": "ai-tell-lint",
+  "version": "1.0.0",
+  "description": "Flags AI-sounding prose before it ships.",
+  "author": {
+    "name": "Omar ElHawary"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/omaraelhawary/ai-tell-lint"
+}

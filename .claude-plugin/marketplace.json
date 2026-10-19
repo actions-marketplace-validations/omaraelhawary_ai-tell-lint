@@ -1,0 +1,14 @@
+{
+  "name": "ai-tell-lint",
+  "owner": {
+    "name": "Omar ElHawary"
+  },
+  "plugins": [
+    {
+      "name": "ai-tell-lint",
+      "source": "./",
+      "description": "Flags AI-sounding prose before it ships."
+    }
+  ],
+  "description": "Flags AI-sounding prose before it ships."
+}
