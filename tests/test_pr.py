@@ -7,6 +7,7 @@ import os
 import subprocess
 import tempfile
 import unittest
+from unittest import mock
 
 from ai_tell_lint import pr
 from ai_tell_lint.config import load_config
@@ -130,6 +131,52 @@ class TestPr(unittest.TestCase):
         self.assertEqual(rc, 1)
         self.assertIn("file=c.md,line=6", out)
         self.assertNotIn("a.md", out)
+
+    def test_spaced_path(self):
+        os.makedirs(os.path.join(self.repo, "docs"))
+        self.write("docs/a b.md", "# T\n")
+        base = self.commit()
+        self.write("docs/a b.md", "# T\n\n%s\n" % TELL)
+        head = self.commit()
+        rc, out, _ = self.run_pr(base, head)
+        self.assertEqual(rc, 1)
+        self.assertIn("file=docs/a b.md,line=3::", out)
+
+    def test_quoted_path_unquoted(self):
+        self.write('q"x.md', "# T\n")
+        base = self.commit()
+        self.write('q"x.md', "# T\n\n%s\n" % TELL)
+        head = self.commit()
+        rc, out, _ = self.run_pr(base, head)
+        self.assertEqual(rc, 1)
+        self.assertIn('file=q"x.md,line=3::', out)
+
+    def test_plusplus_content_line_is_not_a_header(self):
+        self.write("x.md", "\n".join([CLEAN] * 10) + "\n")
+        base = self.commit()
+        lines = [CLEAN] * 10
+        lines[1] = "++ x.md"
+        lines[7] = TELL
+        self.write("x.md", "\n".join(lines) + "\n")
+        head = self.commit()
+        rc, out, _ = self.run_pr(base, head)
+        self.assertEqual(rc, 1)
+        self.assertIn("file=x.md,line=8::", out)
+
+    def test_git_failure_exit_2(self):
+        base = self.commit("init")
+        head = self.commit("next")
+        real = pr._git
+
+        def fake(*args):
+            if "diff" in args:
+                return subprocess.CompletedProcess(args, 128, b"", b"boom")
+            return real(*args)
+
+        with mock.patch.object(pr, "_git", fake):
+            rc, _, err = self.run_pr(base, head)
+        self.assertEqual(rc, 2)
+        self.assertIn("ai-tell-lint: git diff failed: boom", err)
 
     def test_binary_md_no_crash(self):
         base = self.commit("init")
