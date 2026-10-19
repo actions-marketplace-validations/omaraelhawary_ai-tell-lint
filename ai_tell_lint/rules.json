@@ -1,0 +1,115 @@
+{
+  "_readme": "Default rules for ai-tell-lint. 'block' patterns fail, 'warn' patterns are reported only. Override or extend them in .ai-tell-lint.json.",
+  "block": {
+    "AI vocabulary": [
+      "\\bdelve(s|d|ing)?\\b",
+      "\\bintricate(ly)?\\b",
+      "\\btapestry\\b",
+      "\\bpivotal\\b",
+      "\\bunderscor(e|es|ed|ing)\\b",
+      "\\b(competitive|evolving|changing|current|broader|digital|technological|shifting|modern)\\s+landscape\\b",
+      "\\bfoster(s|ed|ing)?\\b",
+      "\\btestament\\b",
+      "\\bcrucial(ly)?\\b",
+      "\\brealm\\b",
+      "\\brobust(ness|ly)?\\b",
+      "\\bseamless(ly)?\\b",
+      "\\bcomprehensive(ly)?\\b",
+      "\\bvibrant\\b",
+      "\\bmultifaceted\\b",
+      "\\bnuanced\\b",
+      "\\bholistic(ally)?\\b",
+      "\\bmeticulous(ly)?\\b",
+      "\\bharness(es|ed|ing)?\\b",
+      "\\bembark(s|ed|ing)?\\b",
+      "\\belevat(e|es|ed|ing)\\b",
+      "\\bunlock(s|ed|ing)?\\b",
+      "\\bunleash(es|ed|ing)?\\b",
+      "\\bspearhead(s|ed|ing)?\\b",
+      "\\bresonat(e|es|ed|ing)\\b",
+      "\\benhanc(e|es|ed|ing|ement|ements)\\b",
+      "\\bleverag(e|es|ed|ing)\\b"
+    ],
+    "Filler connector": [
+      "\\bmoreover\\b",
+      "\\bfurthermore\\b",
+      "(?<![a-z])additionally,",
+      "\\bnotably,",
+      "\\bimportantly,",
+      "it'?s worth noting",
+      "it is worth noting",
+      "it'?s important to note",
+      "it is important to note",
+      "\\bthat said,"
+    ],
+    "Negative parallelism": [
+      "\\b(?:do|does|did|is|it'?s|was|were|are|they'?re|we'?re|this is|that'?s)\\s+not\\s+(?:just|merely|only|simply)\\s+[^,.;:!?]{2,45},\\s*(?:but|it|they|we|this|that)\\b",
+      "\\b(?:is|it'?s|was|are|they'?re|we'?re|this is)\\s+not\\s+[^,.;:!?]{2,45},\\s*(?:but|it'?s|it is|they'?re|they are)\\b",
+      "\\bisn'?t\\s+[^,.;:!?]{2,45},\\s*(?:but|it'?s|it is)\\b",
+      "\\baren'?t\\s+[^,.;:!?]{2,45},\\s*(?:but|they'?re)\\b",
+      "\\bnot\\s+(?:a|an|the)\\s+[^,.;:!?]{2,40},\\s*(?:but|it'?s|it is)\\b"
+    ],
+    "Compulsive summary": [
+      "(?m)^\\s*(?:in conclusion|in summary|to summarize|to sum up|overall,|all in all)\\b"
+    ],
+    "Puffery": [
+      "stands? as a testament",
+      "plays? a (?:vital|crucial|key|significant|pivotal|central) role",
+      "is a (?:key|crucial|vital|critical) (?:part|component|element|aspect)",
+      "\\bgame[- ]chang(er|ing)\\b",
+      "\\brevolution(ary|ise|ize|ises|izes|ising|izing)\\b",
+      "\\bcutting[- ]edge\\b",
+      "\\bstate[- ]of[- ]the[- ]art\\b",
+      "\\bbest[- ]in[- ]class\\b",
+      "\\bworld[- ]class\\b",
+      "\\bmust[- ]see\\b",
+      "\\brich history\\b",
+      "\\bstunning\\b",
+      "\\ba wide (?:range|variety|array) of\\b",
+      "\\bin today'?s (?:fast[- ]paced|digital|modern|ever[- ]changing)\\b"
+    ],
+    "Editorializing": [
+      "\\binterestingly,",
+      "\\bremarkably,",
+      "\\bit'?s no surprise\\b",
+      "\\bneedless to say\\b",
+      "\\bof course,\\s*(?:it|this|that)\\b"
+    ],
+    "Vague attribution": [
+      "\\bindustry experts\\b",
+      "\\bstudies (?:show|suggest|indicate)\\b",
+      "\\bresearch (?:shows|suggests|indicates)\\b",
+      "\\b(?:many|some) (?:observers|commentators|analysts) (?:note|say|argue)\\b",
+      "\\bit is widely (?:regarded|considered|believed|seen)\\b",
+      "\\bexperts agree\\b"
+    ],
+    "Tailing -ing clause": [
+      ",\\s*(?:underscoring|showcasing|solidifying|cementing|highlighting|reflecting|emphasizing|reinforcing|signalling|signaling)\\s+[^.;!?\\n]{3,}[.!?]",
+      ",\\s*(?:streamlining|boosting|driving|delivering|fostering|empowering|maximizing|maximising)\\s+[^.;!?\\n]{3,}[.!?]"
+    ]
+  },
+  "warn": {
+    "Figurative navigate": [
+      "\\bnavigat(e|es|ed|ing)\\s+(?:the\\s+)?(?:complexit|challeng|landscape|nuance|tradeoff|trade-off|ambiguit|uncertaint)"
+    ],
+    "False range": [
+      "\\bfrom\\s+(?:small|individual|solo|hobby|startups?|indie)\\b[^.;!?\\n]{0,40}\\bto\\s+(?:global|large|enterprise|Fortune|multinational)\\b"
+    ],
+    "Rule of three": [
+      "\\b\\w+ly\\b,\\s*\\b\\w+ly\\b,?\\s*and\\s+\\b\\w+ly\\b",
+      "\\b(?:fast|quick|simple|easy|clean|clear|secure|reliable|scalable|flexible|powerful|modern)\\b,\\s*\\b\\w+\\b,?\\s*and\\s+\\b\\w+\\b"
+    ],
+    "Hedging stack": [
+      "\\b(?:may|might|could)\\s+potentially\\b",
+      "\\bin many cases\\b",
+      "\\bsome (?:would )?argue\\b"
+    ],
+    "Curly quote or ellipsis char": [
+      "[‘’“”…]"
+    ],
+    "Emoji in heading": [
+      "(?m)^#{1,6}\\s*[^\\w\\s#]"
+    ]
+  },
+  "max_em_dashes_per_150_words": 1
+}
