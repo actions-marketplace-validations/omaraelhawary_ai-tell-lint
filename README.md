@@ -26,7 +26,7 @@ After: This tool cuts the setup steps from six to two.
 /plugin install ai-tell-lint@ai-tell-lint
 ```
 
-The plugin hooks run before Bash and file-write calls. They deny commit messages, `gh` issue, PR and release text, and writes to prose files (`.md .mdx .markdown .txt .rst`) that trip a block rule. The hook fails open: any error exits 0 and prints nothing.
+The plugin hooks run before Bash and file-write calls. They deny commit messages, `gh` issue, PR and release text, and writes to prose files (`.md .mdx .markdown .txt .rst`) that trip a block rule. The hook fails open: any error exits 0 and prints nothing. The plugin and the Action both call `python3` (3.9 or newer), so it must be on `PATH`.
 
 ## Install the CLI
 
@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: omaraelhawary/ai-tell-lint@v1
+      - uses: omaraelhawary/ai-tell-lint@v1  # works once the v1 tag is published
         with:
           commits: warn
 ```
@@ -65,13 +65,13 @@ jobs:
 Inputs:
 
 - `commits`: `warn` (default) or `block`. Level for commit message hits.
-- `config`: path to a config file. Default is `.ai-tell-lint.json` as it exists on the base branch, so a PR cannot loosen its own rules.
+- `config`: path to a config file. A repo-relative path is read from the base commit, so a PR cannot loosen its own rules. Default is `.ai-tell-lint.json` as it exists on the base branch.
 
 Use `pull_request`, not `pull_request_target`. The latter runs with secrets and may not have the head commit.
 
 ## Config
 
-Lookup order for the CLI and the hook: `--config`, then `.ai-tell-lint.json` at the repo root, then `~/.config/ai-tell-lint/config.json`. The first file found is used. Your patterns are added to the bundled rules.
+Lookup order for the CLI and the hook: `--config`, then `.ai-tell-lint.json` at the repo root, then `~/.config/ai-tell-lint/config.json`. The first file found is used. To check a config the hook would silently ignore, run `ai-tell-lint < /dev/null` in the repo: exit 2 means the config is bad. Your patterns are added to the bundled rules.
 
 Keys:
 
