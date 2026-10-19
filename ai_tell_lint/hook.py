@@ -11,12 +11,34 @@ import datetime
 import json
 import os
 import re
+import shlex
 import sys
 
 from . import config, core, extract
 
 # Only a real command prefix counts, never the same text inside a quoted body.
-BYPASS = re.compile(r"(?:^|[;&|])\s*AI_TELL_LINT=(?:off|0|false)\s", re.I)
+_ASSIGN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
+_OPS = {";", "&&", "||", "|", "&", "|&", ";;"}
+
+
+def _command_bypass(command: str) -> bool:
+    """True if some command segment starts with an AI_TELL_LINT=off style assignment."""
+    lex = shlex.shlex(command, posix=True, punctuation_chars=True)
+    lex.whitespace_split = True
+    try:
+        tokens = list(lex)
+    except ValueError:
+        return False
+    start = True
+    for tok in tokens:
+        if tok in _OPS:
+            start = True
+        elif start and _ASSIGN.match(tok):
+            if tok in ("AI_TELL_LINT=off", "AI_TELL_LINT=0", "AI_TELL_LINT=false"):
+                return True
+        else:
+            start = False
+    return False
 OFF_SENTINEL = "~/.config/ai-tell-lint/off"
 
 
@@ -96,7 +118,7 @@ def _run(stdin, stdout) -> None:
     ti = payload.get("tool_input") or {}
     if tool == "Bash":
         command = ti.get("command") or ""
-        if BYPASS.search(command):
+        if _command_bypass(command):
             return
         targets = extract.bash_targets(command)
         what = "this issue, PR or commit text"

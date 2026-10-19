@@ -57,6 +57,22 @@ class Case(unittest.TestCase):
 
 
 class TestHook(Case):
+    def test_bypass_in_quoted_body_denied(self):
+        self.assertEqual(self.bash('git commit -m "fix: x; AI_TELL_LINT=off y %s"' % TELL), "DENY")
+        self.assertEqual(self.bash('git commit -m "a | AI_TELL_LINT=off b %s"' % TELL), "DENY")
+
+    def test_bypass_after_operator_or_assignment(self):
+        self.assertEqual(self.bash('cd x && AI_TELL_LINT=off git commit -m "%s"' % TELL), "PASS")
+        self.assertEqual(self.bash('FOO=1 AI_TELL_LINT=off git commit -m "%s"' % TELL), "PASS")
+
+    def test_command_bypass_helper(self):
+        from ai_tell_lint.hook import _command_bypass
+        self.assertTrue(_command_bypass("FOO=1 AI_TELL_LINT=off git commit"))
+        self.assertTrue(_command_bypass("a; AI_TELL_LINT=0 b"))
+        self.assertFalse(_command_bypass('echo "AI_TELL_LINT=off" && git commit'))
+        self.assertFalse(_command_bypass('git commit -m "x AI_TELL_LINT=off'))
+        self.assertFalse(_command_bypass("git commit -m x AI_TELL_LINT=off"))
+
     def test_heredoc_md_denied(self):
         self.assertEqual(self.bash("cat > notes.md <<'EOF'\n%s\nEOF" % TELL), "DENY")
 
